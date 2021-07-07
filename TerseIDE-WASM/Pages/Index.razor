@@ -1,0 +1,62 @@
+﻿@page "/"
+@using TerseLang;
+
+<div id="main">
+    <h1 style="display:inline; margin-right: 20px">Terse</h1>
+
+    <button class="run" @onclick="@Run"><span class="oi oi-media-play s-24 text-white"></span> Run</button>
+    <section>
+        <h2><b>CODE</b></h2>
+        <textarea autofocus rows="5" placeholder="code here" @bind="code"></textarea>
+    </section>
+    <section>
+        <h2><b>INPUT</b></h2>
+        <span class="add-remove" @onclick="@(_ => input.Add(""))">+ add</span>
+        @for (int i = 0; i < input.Count; i++) {
+            int j = i;
+            <div style="display:block">
+                <span class="add-remove" @onclick="@(_ => input.RemoveAt(j))" style="float: right">- remove</span>
+                <textarea @bind="input[j]" rows="1"></textarea>
+            </div>
+        }
+    </section>
+    <section>
+        <h2><b>OUTPUT</b></h2>
+        <textarea readonly @bind="output"></textarea>
+    </section>
+
+    <section>
+        <h2><b>ERROR INFO</b></h2>
+        <textarea readonly @bind="error"></textarea>
+    </section>
+</div>
+<Documentation></Documentation>
+@code {
+    string code = "", output = "", error = "";
+    List<string> input = new List<string> { "" };
+
+    void Run() {
+        try {
+            var inputs = input.Select(x => {
+                try {
+                    return TerseLang.Program.ParseInput(x);
+                }
+                catch {
+                    return null;
+                }
+
+            }).Where(x => x != null).ToArray();
+            output = new Interpreter(code, inputs).Interpret().LastOrDefault()?.ToString() ?? "";
+            error = "";
+        }
+        catch (TerseLang.InternalErrorException e) {
+            Console.WriteLine(e);
+            error = e.ToString();
+        }
+        catch (Exception e) {
+            Console.WriteLine(e.ToString());
+
+            error = e.ToString();
+        }
+    }
+} 
