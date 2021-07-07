@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <Reference Include="TerseLang">
-      <HintPath>..\..\TerseLang\GolfingLanguage1\bin\Release\netcoreapp3.1\TerseLang.dll</HintPath>
+      <HintPath>Lib\TerseLang.dll</HintPath>
     </Reference>
   </ItemGroup>
 
