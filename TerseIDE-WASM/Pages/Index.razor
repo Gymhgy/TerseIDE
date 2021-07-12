@@ -1,10 +1,15 @@
 ﻿@page "/"
 @using TerseLang;
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text;
 
 <div id="main">
     <h1 style="display:inline; margin-right: 20px">Terse</h1>
 
-    <button class="run" @onclick="@Run"><span class="oi oi-media-play s-24 text-white"></span> Run</button>
+    <button class="topbutton" @onclick="@Run"><span class="oi oi-media-play s-24 text-white"></span> Run</button>
+    <button class="topbutton" @onclick="@CopyLinkToClipboard"><span class="oi oi-link-intact s-24 text-white"></span> Link</button>
     <section>
         <h2><b>CODE</b></h2>
         <textarea autofocus rows="5" placeholder="code here" @bind="code"></textarea>
@@ -32,22 +37,48 @@
 </div>
 <Documentation></Documentation>
 @code {
-    string code = "", output = "", error = "";
-    List<string> input = new List<string> { "" };
+        string code = "", output = "", error = "";
+        List<string> input = new List<string> { "" };
+
+    protected override void OnInitialized() {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        var queryStrings = QueryHelpers.ParseQuery(uri.Query);
+        if (queryStrings.TryGetValue("code", out var unprocessed)) {
+            try {
+                var unprocessedCode = (string)unprocessed;
+                var bytes = Convert.FromBase64String(unprocessedCode.PadRight(unprocessedCode.Length + (4 - unprocessedCode.Length % 4) % 4, '='));
+                code = string.Concat(bytes.Select(l => TerseLang.Constants.CHARSET[l]));
+            }
+            catch(Exception e) {
+                Console.WriteLine(e);
+            }
+        }
+        if(queryStrings.TryGetValue("in", out var inputs)) {
+            var arr = (String[])inputs;
+            input = arr.Select(x => {
+                var bytes = Convert.FromBase64String(x.PadRight(x.Length + (4 - x.Length % 4) % 4, '='));
+                return Encoding.UTF8.GetString(bytes);
+
+            }).ToList();
+        }
+
+    }
 
     void Run() {
         try {
+            error = "";
+
             var inputs = input.Select(x => {
                 try {
                     return TerseLang.Program.ParseInput(x);
                 }
                 catch {
+                    error = $"Cannot parse input: {x}. Input ignored\n";
                     return null;
                 }
 
             }).Where(x => x != null).ToArray();
             output = new Interpreter(code, inputs).Interpret().LastOrDefault()?.ToString() ?? "";
-            error = "";
         }
         catch (TerseLang.InternalErrorException e) {
             Console.WriteLine(e);
@@ -58,5 +89,14 @@
 
             error = e.ToString();
         }
+    }
+
+    void CopyLinkToClipboard() {
+        string encodedCode = Convert.ToBase64String(code.Select(x => (byte)TerseLang.Constants.CHARSET.IndexOf(x)).ToArray()).TrimEnd('=');
+        string[] encodedInputs = input.Select(x => "in=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(x)).TrimEnd('=')).ToArray();
+        string query = "?";
+        if (encodedCode != "") query += "code=" + encodedCode;
+        if (encodedInputs.Length != 0) query += (query == "?" ? "" : "&") + string.Join("&", encodedInputs);
+        JS.InvokeVoidAsync("copyToClipboard", NavManager.BaseUri + query);
     }
 } 
