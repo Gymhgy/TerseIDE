@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using TerseLang;
+@using TerseLang.Expressions;
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @using Microsoft.AspNetCore.WebUtilities
@@ -12,8 +13,14 @@
     <button class="topbutton" @onclick="@CopyLinkToClipboard"><span class="oi oi-link-intact s-24 text-white"></span> Link</button>
     <section>
         <h2><b>CODE</b></h2>
-        <textarea autofocus rows="5" placeholder="code here" @bind="code"></textarea>
+        <textarea autofocus rows="5" placeholder="code here" @bind="code" @oninput="UpdatePsuedocode"></textarea>
     </section>
+
+    <section>
+        <h2><b>PSEUDOCODE</b></h2>
+        <textarea readonly @bind="pseudocode"></textarea>
+    </section>
+
     <section>
         <h2><b>INPUT</b></h2>
         <span class="add-remove" @onclick="@(_ => input.Add(""))">+ add</span>
@@ -37,8 +44,8 @@
 </div>
 <Documentation></Documentation>
 @code {
-        string code = "", output = "", error = "";
-        List<string> input = new List<string> { "" };
+    string code = "", pseudocode = "", output = "", error = "";
+    List<string> input = new List<string> { "" };
 
     protected override void OnInitialized() {
         var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
@@ -62,6 +69,36 @@
             }).ToList();
         }
 
+    }
+
+    void UpdatePsuedocode() {
+        try {
+            var exprs = Parser.Parse(code);
+            //Un-parsing!
+            string Unparse(Expression expr) {
+                switch (expr) {
+                    case NumericLiteralExpression number:
+                        return number.Value + " ";
+                    case StringLiteralExpression str:
+                        return '"' + str.Value + '"';
+                    case VariableReferenceExpression variable:
+                        return variable.Name;
+                    case FunctionInvocationExpression func:
+                        return Unparse(func.Caller) + "." + func.Function + "(" + string.Join(", ", func.Arguments.Select(Unparse)) + ")";
+                    case ConditionalExpression conditional:
+                        return Unparse(conditional.Condition) + " ? " + Unparse(conditional.TrueExpression) + " : " + Unparse(conditional.FalseExpression);
+                    case ListExpression list:
+                        return "[" + string.Join(", ", list.Contents.Select(Unparse)) + "]";
+                    case AutoExpression:
+                        return "Autofill";
+                    default:
+                        return "";
+                }
+            }
+            pseudocode = string.Join(";\n", exprs.Select(Unparse));
+        }
+        catch {
+        }
     }
 
     void Run() {
