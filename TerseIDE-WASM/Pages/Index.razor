@@ -13,12 +13,13 @@
     <button class="topbutton" @onclick="@CopyLinkToClipboard"><span class="oi oi-link-intact s-24 text-white"></span> Link</button>
     <section>
         <h2><b>CODE</b></h2>
-        <textarea autofocus rows="5" placeholder="code here" @bind="code" @oninput="UpdatePsuedocode"></textarea>
+        <textarea autofocus rows="5" placeholder="code here" @bind="code"></textarea>
     </section>
 
     <section>
-        <h2><b>PSEUDOCODE</b></h2>
-        <textarea readonly @bind="pseudocode"></textarea>
+        <h2 style="display:inline-block;"><b>PSEUDOCODE</b></h2>
+        <div style="display:inline-block; float:right; position:relative;" @onclick="@UpdatePsuedocode"><h2><b>Generate</b> <span class="oi oi-media-play text-white"></span></h2></div>
+        <textarea readonly>@pseudocode</textarea>
     </section>
 
     <section>
@@ -72,33 +73,35 @@
     }
 
     void UpdatePsuedocode() {
-        try {
-            var exprs = Parser.Parse(code);
-            //Un-parsing!
-            string Unparse(Expression expr) {
-                switch (expr) {
-                    case NumericLiteralExpression number:
-                        return number.Value + " ";
-                    case StringLiteralExpression str:
-                        return '"' + str.Value + '"';
-                    case VariableReferenceExpression variable:
-                        return variable.Name;
-                    case FunctionInvocationExpression func:
-                        return Unparse(func.Caller) + "." + func.Function + "(" + string.Join(", ", func.Arguments.Select(Unparse)) + ")";
-                    case ConditionalExpression conditional:
-                        return Unparse(conditional.Condition) + " ? " + Unparse(conditional.TrueExpression) + " : " + Unparse(conditional.FalseExpression);
-                    case ListExpression list:
-                        return "[" + string.Join(", ", list.Contents.Select(Unparse)) + "]";
-                    case AutoExpression:
-                        return "Autofill";
-                    default:
-                        return "";
-                }
+        var exprs = Parser.Parse(code);
+        //Un-parsing!
+        string Unparse(Expression expr) {
+            switch (expr) {
+                case NumericLiteralExpression number:
+                    return number.Value + " ";
+                case StringLiteralExpression str:
+                    return '"' + str.Value + '"';
+                case VariableReferenceExpression variable:
+                    return variable.Name;
+                case FunctionInvocationExpression func:
+                    return Unparse(func.Caller) + "." + func.Function + "(" + string.Join(", ", func.Arguments.Select(Unparse)) + ")";
+                case ConditionalExpression conditional:
+                    return Unparse(conditional.Condition) + " ? " + Unparse(conditional.TrueExpression) + " : " + Unparse(conditional.FalseExpression);
+                case ListExpression list:
+                    return "[" + string.Join(", ", list.Contents.Select(Unparse)) + "]";
+                case AutoExpression:
+                    return "Autofill";
+                default:
+                    return "";
             }
-            pseudocode = string.Join(";\n", exprs.Select(Unparse));
         }
-        catch {
-        }
+        pseudocode = string.Join(";\n", exprs.Select(Unparse));
+        Console.WriteLine("FIRE");
+
+        StateHasChanged();
+
+
+
     }
 
     void Run() {
