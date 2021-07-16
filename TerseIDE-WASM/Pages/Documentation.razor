@@ -1,21 +1,82 @@
-﻿<article id="docs">
-    <div id="doc-topbar">
-        <span id="section-title">Introduction</span>
-        <span class="oi oi-ellipses text-white" style="transform:rotate(90deg); left: 275px;"></span>
-        <ul id="contents-dropdown">
-            <li>Introduction</li>
-            <li>Number Functions</li>
-            <li>String Functions</li>
-            <li>List Functions</li>
-        </ul>
-    </div>
-    <article id="docs-body">
-        TODO
-    </article>
+﻿@inject HttpClient Http
+@using System.Text.Json;
 
+<article id="docs">
+    @if (pages == null) {
+        <span style="color:white;">Loading...</span>
+    }
+    else {
+
+        //Load!
+
+        <div id="doc-topbar">
+            <span id="section-title">@currentPage.Page</span>
+            <span class="oi oi-ellipses text-white" style="transform:rotate(90deg); left: 220px;" @onclick="@ShowDropdown"></span>
+            <ul hidden="@Show" id="contents-dropdown" @onfocusout="@(() => Show = false)">
+                @for (int i = 0; i < pages.Length; i++) {
+                    int j = i;
+                     <li @onclick="_=>ToPage(j)">@pages[i].Page</li>
+                }
+            </ul>
+        </div>
+        <article id="docs-body">
+            @currentPage.Intro
+            @foreach (var func in currentPage.Unary) {
+                <div class="func-header">@func.Name → @func.Returns</div>
+                <div>@func.Description</div>
+            }
+            @foreach (var func in currentPage.Binary) {
+                <div class="func-header">
+                    @func.Name → @func.Returns
+                    <span style="float:right">
+                        @foreach (var tChar in func.Tiers) {
+                            <code style="margin:0px 10px">@tChar</code>
+                        }
+                    </span>
+                </div>
+                <div>@func.Description</div>
+            }
+        </article>
+
+    }
 </article>
 
 
 @code {
+    bool Show = false;
+    void ShowDropdown() {
+        Show = !Show;
+    }
+    int currentPageNum = 0;
+    void ToPage(int i) {
+        currentPageNum = i;
+    }
 
+    DocPage currentPage => pages[currentPageNum];
+
+    DocPage[] pages;
+    public class DocPage {
+        public string Intro { get; set; }
+        public string Page { get; set; }
+        public string Type { get; set; }
+        public UnaryFunc[] Unary { get; set; }
+        public BinaryFunc[] Binary { get; set; }
+
+    }
+    public class UnaryFunc {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Returns { get; set; }
+    }
+    public class BinaryFunc {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ArgType { get; set; }
+        public string Returns { get; set; }
+        public string[] Tiers { get; set; }
+    }
+
+    protected async override Task OnInitializedAsync() {
+        pages = await Http.GetFromJsonAsync<DocPage[]>("docs/page.json", new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
 }
