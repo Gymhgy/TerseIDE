@@ -22,7 +22,7 @@
         <ul hidden="@Hide" id="contents-dropdown" tabindex="1" @onfocusout="@(() => Hide = true)" @ref="dropdown">
             @for (int i = 0; i < pages.Length; i++) {
                 int j = i;
-                <li @onclick="_=>ToPage(j)">@pages[i].Page</li>
+                <li @onclick="_=>ToPage(j)" style="@(currentPage == pages[j] ? "background-color: #121212" : "")">@pages[i].Page</li>
             }
         </ul>
 
@@ -67,7 +67,6 @@
         public string Type { get; set; }
         public UnaryFunc[] Unary { get; set; }
         public BinaryFunc[] Binary { get; set; }
-
     }
     public class UnaryFunc {
         public string Name { get; set; }
