@@ -8,12 +8,13 @@
     <base href="./" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
-    <link href="TerseIDE-WASM.styles.css" rel="stylesheet" />
     <script>
         window.copyToClipboard = text => {
             navigator.clipboard.writeText(text);
         };
-        
+        window.printActive = () => {
+            console.log(document.activeElement);
+        }
     </script>
 </head>
 

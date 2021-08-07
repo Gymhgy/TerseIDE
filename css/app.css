@@ -89,21 +89,46 @@ textarea {
 
 #doc-topbar {
     background-color: #424242;
-    padding: 10px 5px;
+    padding: 0;
     border-bottom: 1px solid gray;
+    margin: 0;
+    overflow: hidden;
+}
+
+.topbar-item {
+    padding: 10px 5px;
 }
 
 #section-title {
     color: white;
     font-size: 18px;
     font-family: Roboto,Arial,sans-serif;
+    float: left;
+}
+
+#dropdown-button {
+    z-index: 1;
+    float: right;
+    font-size: 18px;
+}
+
+#dropdown-button:focus, #dropdown-button:hover {
+    background-color: #212121;
 }
 
 #contents-dropdown {
-    display: none;
-    position: relative;
-    z-index: 1;
+
+    position: absolute;
+    right: 0px;
+    top: 40px;
+    z-index: 4;
+    min-width: 160px;
+    background-color: #121212;
+    list-style-type: none;
+    color: #FFFFFF;
 }
+
+
 
 #docs-body {
     padding: 5px;
