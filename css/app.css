@@ -122,13 +122,22 @@ textarea {
     right: 0px;
     top: 40px;
     z-index: 4;
-    min-width: 160px;
-    background-color: #121212;
+    background-color: #212121;
     list-style-type: none;
     color: #FFFFFF;
+    padding: 0px;
+
+    border: 1px solid gray;
 }
 
+#contents-dropdown > li {
+    line-height: 30px;
+    padding: 0px 5px;
+}
 
+#contents-dropdown > li:hover {
+    background-color: #121212;
+}
 
 #docs-body {
     padding: 5px;
