@@ -1,5 +1,7 @@
 ﻿@inject HttpClient Http
 @using System.Text.Json;
+@using System.Threading
+@inject IJSRuntime JS
 
 <article id="docs">
     @if (pages == null) {
@@ -10,15 +12,20 @@
         //Load!
 
         <div id="doc-topbar">
-            <span id="section-title">@currentPage.Page</span>
-            <span class="oi oi-ellipses text-white" style="transform:rotate(90deg); left: 220px;" @onclick="@ShowDropdown"></span>
-            <ul hidden="@Show" id="contents-dropdown" @onfocusout="@(() => Show = false)">
-                @for (int i = 0; i < pages.Length; i++) {
-                    int j = i;
-                     <li @onclick="_=>ToPage(j)">@pages[i].Page</li>
-                }
-            </ul>
+            <span class="topbar-item" id="section-title">@currentPage.Page</span>
+            <span class="oi oi-menu text-white topbar-item" id="dropdown-button" tabindex="0" @onclick="@(() => {
+                                                                                                              Hide = !Hide; dropdown.FocusAsync();
+                                                                                                          })"></span>
+
         </div>
+
+        <ul hidden="@Hide" id="contents-dropdown" tabindex="1" @onfocusout="@(() => Hide = true)" @ref="dropdown">
+            @for (int i = 0; i < pages.Length; i++) {
+                int j = i;
+                <li @onclick="_=>ToPage(j)">@pages[i].Page</li>
+            }
+        </ul>
+
         <article id="docs-body">
             @currentPage.Intro
             @foreach (var func in currentPage.Unary) {
@@ -43,13 +50,12 @@
 
 
 @code {
-    bool Show = false;
-    void ShowDropdown() {
-        Show = !Show;
-    }
+    ElementReference dropdown;
+    bool Hide = true;
     int currentPageNum = 0;
     void ToPage(int i) {
         currentPageNum = i;
+        Hide = true;
     }
 
     DocPage currentPage => pages[currentPageNum];
