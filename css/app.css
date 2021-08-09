@@ -155,6 +155,7 @@ textarea {
     font-family: monospace;
     padding: 4px;
     width: 100%;
+    cursor: pointer;
 }
 
 ::-webkit-scrollbar {
@@ -166,4 +167,6 @@ textarea {
     border-radius: 2px;
     padding: 0 4px;
     color: #ffffff;
+    margin: 0px 10px;
+    cursor: pointer;
 }
