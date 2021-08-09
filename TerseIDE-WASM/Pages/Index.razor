@@ -43,10 +43,13 @@
         <textarea readonly @bind="error"></textarea>
     </section>
 </div>
-<Documentation></Documentation>
+<Documentation OnCodeCharClicked="@s"></Documentation>
 @code {
     string code = "", pseudocode = "", output = "", error = "";
-    List<string> input = new List<string> { "" };
+    List<string> input = new List<string> { };
+
+    void s(string c) { code += c; this.StateHasChanged();
+    }
 
     protected override void OnInitialized() {
         var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
@@ -96,7 +99,6 @@
             }
         }
         pseudocode = string.Join(";\n", exprs.Select(Unparse));
-        Console.WriteLine("FIRE");
 
         StateHasChanged();
 

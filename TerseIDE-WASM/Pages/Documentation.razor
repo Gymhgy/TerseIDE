@@ -29,7 +29,7 @@
         <article id="docs-body">
             @currentPage.Intro
             @foreach (var func in currentPage.Unary) {
-                <div class="func-header">@func.Name → @func.Returns</div>
+                <div class="func-header" @onclick="@(() => OnCodeCharClicked(func.Name[0].ToString()))">@func.Name → @func.Returns</div>
                 <div>@func.Description</div>
             }
             @foreach (var func in currentPage.Binary) {
@@ -37,7 +37,7 @@
                     @func.Name → @func.Returns
                     <span style="float:right">
                         @foreach (var tChar in func.Tiers) {
-                            <code style="margin:0px 10px">@tChar</code>
+                            <code @onclick="@(() => OnCodeCharClicked(tChar))">@tChar</code>
                         }
                     </span>
                 </div>
@@ -50,6 +50,9 @@
 
 
 @code {
+    [Parameter]
+    public Action<string> OnCodeCharClicked { get; set; }
+
     ElementReference dropdown;
     bool Hide = true;
     int currentPageNum = 0;
