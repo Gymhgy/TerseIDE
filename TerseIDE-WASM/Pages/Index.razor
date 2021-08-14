@@ -18,7 +18,9 @@
 
     <section>
         <h2 style="display:inline-block;"><b>PSEUDOCODE</b></h2>
-        <div style="display:inline-block; float:right; position:relative;" @onclick="@UpdatePsuedocode"><h2><b>Generate</b> <span class="oi oi-media-play text-white"></span></h2></div>
+        <div style="display:inline-block; float:right; position:relative;" @onclick="@UpdatePsuedocode">
+            <h2><b>Generate</b> <span class="oi oi-media-play text-white"></span></h2>
+        </div>
         <textarea readonly>@pseudocode</textarea>
     </section>
 
@@ -43,13 +45,11 @@
         <textarea readonly @bind="error"></textarea>
     </section>
 </div>
-<Documentation OnCodeCharClicked="@s"></Documentation>
+<Documentation OnCodeCharClicked="@(c => { code += c; this.StateHasChanged(); })"></Documentation>
 @code {
-    string code = "", pseudocode = "", output = "", error = "";
-    List<string> input = new List<string> { };
-
-    void s(string c) { code += c; this.StateHasChanged();
-    }
+        ObjectType curType;
+        string code = "", pseudocode = "", output = "", error = "";
+        List<string> input = new List<string> { };
 
     protected override void OnInitialized() {
         var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
@@ -77,28 +77,22 @@
 
     void UpdatePsuedocode() {
         var exprs = Parser.Parse(code);
-        //Un-parsing!
-        string Unparse(Expression expr) {
-            switch (expr) {
-                case NumericLiteralExpression number:
-                    return number.Value + " ";
-                case StringLiteralExpression str:
-                    return '"' + str.Value + '"';
-                case VariableReferenceExpression variable:
-                    return variable.Name;
-                case FunctionInvocationExpression func:
-                    return Unparse(func.Caller) + "." + func.Function + "(" + string.Join(", ", func.Arguments.Select(Unparse)) + ")";
-                case ConditionalExpression conditional:
-                    return Unparse(conditional.Condition) + " ? " + Unparse(conditional.TrueExpression) + " : " + Unparse(conditional.FalseExpression);
-                case ListExpression list:
-                    return "[" + string.Join(", ", list.Contents.Select(Unparse)) + "]";
-                case AutoExpression:
-                    return "Autofill";
-                default:
-                    return "";
+
+        var inputs = input.Select(x => {
+            try {
+                if (x == "") return new VObject("");
+                return TerseLang.Program.ParseInput(x);
             }
-        }
-        pseudocode = string.Join(";\n", exprs.Select(Unparse));
+            catch {
+                return null;
+            }
+
+        }).Where(x => x != null).ToArray();
+
+        //Un-parsing!
+        Unparser unparser = new Unparser(code, inputs);
+
+        pseudocode = unparser.Unparse();
 
         StateHasChanged();
 
@@ -112,6 +106,7 @@
 
             var inputs = input.Select(x => {
                 try {
+                    if (x == "") return new VObject("");
                     return TerseLang.Program.ParseInput(x);
                 }
                 catch {
