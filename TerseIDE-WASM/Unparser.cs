@@ -46,10 +46,6 @@ namespace TerseIDE {
                     return (number.Value + " ", new VObject(number.Value));
                 case StringLiteralExpression str:
                     return ('"' + str.Value + '"', new VObject(str.Value));
-                case ListExpression array:
-                    var contents = array.Contents.Select(Unparse).ToList();
-                    return ("[" + string.Join(", ", contents.Select(x => x.unparsed).ToList()) + "]", new VObject(contents.Select(x => x.val).ToList()));
-
                 case VariableReferenceExpression variable:
                     return (variable.Name, programState.Variables[variable.Name]);
 
