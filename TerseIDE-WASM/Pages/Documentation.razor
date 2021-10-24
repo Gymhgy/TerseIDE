@@ -33,7 +33,7 @@
                 <div>@func.Description</div>
             }
             @foreach (var func in currentPage.Binary) {
-                <div class="func-header">
+                <div class="func-header" @onclick="@(() => OnCodeCharClicked(func.Name[0].ToString()))">
                     @func.Name → @func.Returns
                     <span style="float:right">
                         @foreach (var tChar in func.Tiers) {
