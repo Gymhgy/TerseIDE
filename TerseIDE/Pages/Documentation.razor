@@ -37,7 +37,7 @@
                     @func.Name → @func.Returns
                     <span style="float:right">
                         @foreach (var tChar in func.Tiers) {
-                            <code @onclick="@(() => OnCodeCharClicked(tChar))">@tChar</code>
+                            <code @onclick="@(() => OnCodeCharClicked(tChar))" @onclick:stopPropagation="true">@tChar</code>
                         }
                     </span>
                 </div>
